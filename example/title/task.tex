@@ -1,0 +1,87 @@
+%if not solution:
+\thispagestyle{empty}
+
+\setlength{\unitlength}{1cm}
+\begin{picture}(0,0)(0,0)
+	\put(11,-1){\includegraphics[width=5cm]{${h.render("logo.svg")}}}
+\end{picture}
+\vspace*{5mm}
+
+{\Large \bf Modul: ${name}} \vspace*{2mm} \\%
+
+{\large Fakultät für Technik} \vspace*{5mm} \\%
+
+Studiengang: ${subject} \hfill Datum: ${date}
+\vspace*{5mm}
+
+\hrule
+
+\begin{tabbing}
+\hspace*{3.5cm}  \= \hspace*{2.5cm} \= \hspace*{3.0cm} \= \hspace*{2.0cm} \= \kill
+\ \\%
+\ \\%
+\textbf{Matrikelnummer:} \> \qquad ....................................... \> \> \> Dozent: \\%
+\>  \> \> \> ${lecturer} \\%
+\> \> \> \> \\%
+	Kurs: \> ${year} \> \> Semester: \> ${semester} \\%
+\> \> \> \> \\%
+%for (no, supply) in enumerate(supplies):
+%if no == 0:
+Hilfsmittel: \> ${supply} \> \> Bearbeitungszeit: \+ ${time} \- \\%
+%else:
+\> ${supply}\\%
+%endif
+%endfor
+\> \> \> \> \\%
+Bewertung: \> Maximale Punktzahl: \+ ${total_number_points} \- \> \> Erreichte Punktzahl: \+ ........... \-  \\%
+\> \> \> \> \\%
+Note: \> ........... \> \> Signum: \> ........... \\%
+\> \> \> \> \\%
+Anmerkungen: \> \> \> \> \\%
+\end{tabbing}
+\vspace*{1cm}
+
+\hrule
+\vspace*{1cm}
+
+\newcounter{punkte}
+\setcounter{punkte}{0}
+\begin{tabularx}{\textwidth}{|c|c|c|X|} \hline
+Aufgabennummer & maximale & erreichte & Bemerkung \\%
+& Punktzahl & Punktzahl & \\ \hline \hline
+%for no in range(1, total_number_tasks + 1):
+	${no} & ${points_of[no]} & & \\%
+%endfor
+Summe & ${total_number_points} & & \\ \hline
+\end{tabularx}
+
+\vspace{0.75cm}
+
+Diese Klausur besteht aus \textbf{{\pageref{LastPage}} Seiten}. Stellen Sie vor Beginn der Bearbeitung sicher, dass Sie alle Seiten vollständig erhalten haben. Viel Erfolg.
+%else:
+
+\thispagestyle{empty}
+
+\begin{centering}
+	\fontsize{60pt}{90pt}\selectfont \textsc{Musterlösung}
+
+	\textbf{Nicht kopieren}
+
+	\Large
+	\vspace{5cm}
+	${name} am ${date}\\%
+	\vspace{2cm}
+	${lecturer}\\%
+\end{centering}
+
+%endif
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{{\thepage} von {\pageref{LastPage}}}
+%if not solution:
+\lhead{\bfseries ${name} ${date}}
+%else:
+\lhead{\bfseries MUSTERLÖSUNG -- NICHT KOPIEREN}
+%endif
+\rfoot{}

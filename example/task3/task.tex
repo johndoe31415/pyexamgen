@@ -1,0 +1,29 @@
+<%namespace file="common.tex" name="common" import="*"/>
+<%common:task text="Gatter">
+Gegeben sei folgende Schaltung:
+
+\includegraphics[width=8cm]{${h.render("example_gatter.svg")}}
+
+\begin{enumerate}
+	<%common:question pts="1">
+        Handelt es sich bei der Schaltung um ein Schaltnetz oder ein Schaltwerk? Begründen Sie Ihre Antwort.
+		<%common:answer>
+		Lösung für Aufgabe 1
+		</%common:answer>
+	</%common:question>
+
+	<%common:question pts="1">
+        Nennen Sie einen Booleschen Ausdruck, der $Y$ in Abhängigkeit von $A, B, C$ beschreibt.
+		<%common:answer>
+		Lösung für Aufgabe 2
+		</%common:answer>
+	</%common:question>
+
+	<%common:question pts="1">
+        Zeichnen Sie den Ausdruck $A \overline{C} \vee (B \oplus C) \vee \overline{A (\overline{B} \vee C)}$ als elektronische Schaltung.
+		<%common:answer>
+		Lösung für Aufgabe 3
+		</%common:answer>
+	</%common:question>
+\end{enumerate}
+</%common:task>

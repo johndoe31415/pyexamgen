@@ -1,0 +1,24 @@
+{
+	"locale": "de-DE",
+	"prng": "fsjd3983",
+	"sources": [
+		{ "name": "title" },
+		{ "name": "task1" },
+		{ "name": "task2" },
+		{ "name": "task3" }
+	],
+	"local_includes": "local_includes.tex",
+	"variables": {
+		"subject": "Informatik",
+		"name": "Technische Informatik I",
+		"lecturer": "Prof. Dr. Johannes Bauer",
+		"supplies": [
+			"1 handbeschriebenes Blatt A4",
+			"Taschenrechner"
+		],
+		"date": "18.12.2023",
+		"time": "90 Minuten",
+		"year": "TINF23CS2",
+		"semester": "1"
+	}
+}

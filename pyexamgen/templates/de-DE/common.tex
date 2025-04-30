@@ -1,0 +1,39 @@
+<%def name="task(text)">
+	\newpage
+
+	\section*{Aufgabe ${h.next_task_no()}: ${text}}
+	\renewcommand{\theenumi}{${h.current_task_no}.\arabic{enumi}}
+	${caller.body()}
+	%if not solution:
+	\newpage
+	\section*{Lösung zur Aufgabe ${h.current_task_no}: ${text}}
+	%endif
+</%def>
+
+<%def name="show_points(pts)">\
+<% pts = h.parse_points(pts) %>\
+%if isinstance(pts, int):
+%if pts == 1:
+1 Punkt\
+%else:
+${pts} Punkte\
+%endif
+%else:
+${f'{pts:.1f}'} Punkte\
+%endif
+</%def>
+
+<%def name="question(pts)">
+<%
+	h.count_points(pts)
+%>
+	\item (${show_points(pts)})\\%\
+	${caller.body()}
+</%def>
+
+<%def name="answer()">
+%if solution:
+\emph{Lösung}: ${caller.body()}
+%endif
+</%def>
+
