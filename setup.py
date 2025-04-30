@@ -6,7 +6,7 @@ with open("README.md") as f:
 setuptools.setup(
 	name = "pyexamgen",
 	packages = setuptools.find_packages(),
-	version = "0.0.1rc0",
+	version = "0.0.2",
 	license = "GPL-3.0-only",
 	description = "Generate LaTeX exams using advanced Mako templates",
 	long_description = long_description,
@@ -14,7 +14,7 @@ setuptools.setup(
 	author = "Johannes Bauer",
 	author_email = "joe@johannes-bauer.com",
 	url = "https://github.com/johndoe31415/pyexamgen",
-	download_url = "https://github.com/johndoe31415/pyexamgen/archive/v0.0.1rc0.tar.gz",
+	download_url = "https://github.com/johndoe31415/pyexamgen/archive/v0.0.2.tar.gz",
 	keywords = [ "exam", "generator", "template" ],
 	install_requires = [
 		"mako",
@@ -24,7 +24,7 @@ setuptools.setup(
 			"pyexamgen = pyexamgen.__main__:main"
 		]
 	},
-	include_package_data = False,
+	include_package_data = True,
 	classifiers = [
 		"Development Status :: 5 - Production/Stable",
 		"Intended Audience :: Developers",

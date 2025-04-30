@@ -40,6 +40,8 @@ class ExamRenderer():
 			self._defs = json.load(f)
 		self._frozen_data = None
 		self._rendered = { }
+		if self._verbose >= 3:
+			print(f"Template directory: {self.template_dir}")
 
 	@property
 	def template_dir(self):
@@ -59,7 +61,10 @@ class ExamRenderer():
 
 	@property
 	def definition_directory(self):
-		return os.path.dirname(self._definition_filename)
+		dirname = os.path.dirname(self._definition_filename)
+		if dirname != "":
+			dirname += "/"
+		return dirname
 
 	def _render(self, render_input_filename, render_hook):
 		if render_input_filename not in self._rendered:
@@ -91,9 +96,9 @@ class ExamRenderer():
 	def _render_fragment(self, fragment_definition: dict, template_vars: dict):
 		prng_seed = self._defs.get("prng", "") + "::" + fragment_definition["name"] + "::" + fragment_definition.get("prng", "")
 
+		fragment_directory = self.definition_directory + fragment_definition["name"]
 		if self._verbose >= 3:
-			print(f"Rendering fragment {fragment_definition['name']} with PRNG seed \"{prng_seed}\"")
-		fragment_directory = self.definition_directory + "/" + fragment_definition["name"]
+			print(f"Rendering fragment {fragment_definition['name']} with PRNG seed \"{prng_seed}\", fragment dir {fragment_directory}")
 		lookup = mako.lookup.TemplateLookup([ fragment_directory, self.template_dir ], strict_undefined = True)
 		template = lookup.get_template("task.tex")
 		template_vars = dict(template_vars)
@@ -118,7 +123,7 @@ class ExamRenderer():
 			template_vars.update(self._frozen_data)
 		chunks = [ ]
 		for fragment in self._defs["sources"]:
-			self._current_source_dir = self.definition_directory + "/" + fragment["name"]
+			self._current_source_dir = self.definition_directory + fragment["name"]
 			chunks.append(self._render_fragment(fragment, template_vars))
 		return chunks
 
@@ -162,7 +167,7 @@ class ExamRenderer():
 			"chunks": chunks,
 		}
 		if "local_includes" in self._defs:
-			with open(self.definition_directory + "/" + self._defs["local_includes"]) as f:
+			with open(self.definition_directory + self._defs["local_includes"]) as f:
 				template_vars["local_includes"] = f.read()
 		else:
 			template_vars["local_includes"] = ""
