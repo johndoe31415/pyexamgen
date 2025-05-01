@@ -20,6 +20,7 @@
 #	Johannes Bauer <JohannesBauer@gmx.de>
 
 import sys
+import os
 from .ExamRenderer import ExamRenderer
 from .FriendlyArgumentParser import FriendlyArgumentParser
 
@@ -27,9 +28,25 @@ def main():
 	parser = FriendlyArgumentParser(description = "Render an JSON exam file to PDF.")
 	parser.add_argument("-t", "--tex", action = "store_true", help = "Instead of PDFs, just generate raw TeX. Useful for debugging.")
 	parser.add_argument("-v", "--verbose", action = "count", default = 0, help = "Increases verbosity. Can be specified multiple times to increase.")
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument("--only-exam", action = "store_true", help = "Only generate the exam, skip generation of the solution.")
+	group.add_argument("--only-solution", action = "store_true", help = "Only generate the solution, skip generation of the exam.")
+	parser.add_argument("-r", "--randomize-task-seed", metavar = "name", action = "append", default = [ ], help = "Randomize the seed of this sheet name. Can be given multiple times. Keyword 'root' randomizes the main seed.")
+	parser.add_argument("-l", "--loop", action = "store_true", help = "Repeatedly generate output. Useful for example when randomizing task seeds.")
 	parser.add_argument("definition_json", help = "JSON file that defines what parts to include in the exam.")
 	args = parser.parse_args(sys.argv[1:])
 
-	renderer = ExamRenderer(args.definition_json, output_tex = args.tex, verbose = args.verbose)
-	renderer.render_exam()
-	renderer.render_solution()
+	while True:
+		seed_overrides = { name: os.urandom(8).hex() for name in args.randomize_task_seed }
+		if len(seed_overrides) > 0:
+			print(f"Randomized seeds: {', '.join(f'{name} = {value}' for (name, value) in sorted(seed_overrides.items()))}")
+
+		renderer = ExamRenderer(args.definition_json, output_tex = args.tex, seed_overrides = seed_overrides, verbose = args.verbose)
+		if not args.only_solution:
+			renderer.render_exam()
+		if not args.only_exam:
+			renderer.render_solution()
+		if not args.loop:
+			break
+		else:
+			input("Press ENTER to regenerate...")

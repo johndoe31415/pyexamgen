@@ -67,7 +67,7 @@ class RendererHelper():
 		else:
 			return float(pts)
 
-	def render(self, filename):
+	def render(self, filename: str):
 		if filename.endswith(".svg"):
 			return self._exam_renderer.render_svg(filename)
 		elif filename.endswith(".gpl"):
@@ -87,3 +87,7 @@ class RendererHelper():
 			return self.spacestr_la(string, group_len)
 		else:
 			return string[:m] + " " + self.spacestr_la(string[m:], group_len)
+
+	def load_json(self, filename: str):
+		with open(filename) as f:
+			return json.load(f)

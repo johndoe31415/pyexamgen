@@ -62,6 +62,25 @@ class PRNG():
 	def randint(self, min_value_inclusive: int, max_value_inclusive: int):
 		return min_value_inclusive + self.randrange(max_value_inclusive - min_value_inclusive + 1)
 
+	def randintbits(self, bit_count: int):
+		return self.randint(2 ** (bit_count - 1), (2 ** bit_count) - 1)
+
+	def randintbitrange(self, min_bit_count: int, max_bit_count: int):
+		assert(min_bit_count <= max_bit_count)
+		return self.randintbits(self.randint(min_bit_count, max_bit_count))
+
+	def coinflip(self):
+		return self.randrange(2) == 0
+
+	def choice(self, values: list):
+		return values[self.randrange(len(values))]
+
+	def sample(self, values: list, k: int):
+		assert(k <= len(values))
+		values = list(values)
+		self.shuffle(values)
+		return values[:k]
+
 	def shuffle(self, shuffle_obj: list):
 		n = len(shuffle_obj)
 		for i in range(n - 1):
@@ -80,4 +99,4 @@ if __name__ == "__main__":
 #	print(prng.get_bytes(2))
 
 	for i in range(1000000):
-		print(prng.k_of_n(2, 4))
+		print(prng.randintbits(4).bit_length())

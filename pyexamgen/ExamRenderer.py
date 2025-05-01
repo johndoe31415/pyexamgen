@@ -32,9 +32,12 @@ from .PRNG import PRNG
 from .WorkDir import WorkDir
 
 class ExamRenderer():
-	def __init__(self, definition_filename: str, output_tex: bool = False, verbose: int = 0):
+	def __init__(self, definition_filename: str, output_tex: bool = False, seed_overrides: dict | None = None, verbose: int = 0):
 		self._definition_filename = definition_filename
 		self._output_tex = output_tex
+		self._seed_overrides = seed_overrides
+		if self._seed_overrides is None:
+			self._seed_overrides = { }
 		self._verbose = verbose
 		with open(definition_filename) as f:
 			self._defs = json.load(f)
@@ -66,6 +69,13 @@ class ExamRenderer():
 			dirname += "/"
 		return dirname
 
+	@property
+	def root_seed(self):
+		if "root" in self._seed_overrides:
+			return self._seed_overrides["root"]
+		else:
+			return self._defs.get("prng", "")
+
 	def _render(self, render_input_filename, render_hook):
 		if render_input_filename not in self._rendered:
 			render_output_filename = f"{self._tempdir}/{len(self._rendered)}.pdf"
@@ -82,26 +92,31 @@ class ExamRenderer():
 		full_svg_filename = self._current_source_dir + "/" + svg_filename
 		if full_svg_filename not in self._rendered:
 			with tempfile.NamedTemporaryFile(prefix = "exam_renderer_", suffix = ".pdf") as tmpfile:
-				subprocess.check_call([ "inkscape", "-o", tmpfile.name, full_svg_filename ])
+				subprocess.check_call([ "inkscape", "-o", tmpfile.name, svg_filename ])
 				self._store_rendered(full_svg_filename, ".pdf", tmpfile.read())
 		return self._rendered[full_svg_filename][0]
 
 	def render_gnuplot(self, gpl_filename: str):
 		full_gpl_filename = self._current_source_dir + "/" + gpl_filename
 		if full_gpl_filename not in self._rendered:
-			rendered = subprocess.check_output([ "gnuplot", full_gpl_filename ])
+			rendered = subprocess.check_output([ "gnuplot", gpl_filename ])
 			self._store_rendered(full_gpl_filename, ".pdf", rendered)
 		return self._rendered[full_gpl_filename][0]
 
 	def _render_fragment(self, fragment_definition: dict, template_vars: dict):
-		prng_seed = self._defs.get("prng", "") + "::" + fragment_definition["name"] + "::" + fragment_definition.get("prng", "")
+		if fragment_definition["name"] in self._seed_overrides:
+			prng_seed = self.root_seed + "::" + fragment_definition["name"] + "::" + self._seed_overrides[fragment_definition["name"]]
+		else:
+			prng_seed = self.root_seed + "::" + fragment_definition["name"] + "::" + fragment_definition.get("prng", "")
 
 		fragment_directory = self.definition_directory + fragment_definition["name"]
 		if self._verbose >= 3:
 			print(f"Rendering fragment {fragment_definition['name']} with PRNG seed \"{prng_seed}\", fragment dir {fragment_directory}")
-		lookup = mako.lookup.TemplateLookup([ fragment_directory, self.template_dir ], strict_undefined = True)
+		lookup = mako.lookup.TemplateLookup([ ".", self.template_dir ], strict_undefined = True)
 		template = lookup.get_template("task.tex")
 		template_vars = dict(template_vars)
+		if "args" in fragment_definition:
+			template_vars.update(fragment_definition["args"])
 		template_vars.update({
 			"prng": PRNG(prng_seed.encode("utf-8")),
 			"math": math,
@@ -124,7 +139,8 @@ class ExamRenderer():
 		chunks = [ ]
 		for fragment in self._defs["sources"]:
 			self._current_source_dir = self.definition_directory + fragment["name"]
-			chunks.append(self._render_fragment(fragment, template_vars))
+			with WorkDir(self._current_source_dir):
+				chunks.append(self._render_fragment(fragment, template_vars))
 		return chunks
 
 	def _tex_to_pdf(self, tex_input: str, output_filename_pdf: str):
@@ -167,8 +183,7 @@ class ExamRenderer():
 			"chunks": chunks,
 		}
 		if "local_includes" in self._defs:
-			with open(self.definition_directory + self._defs["local_includes"]) as f:
-				template_vars["local_includes"] = f.read()
+			template_vars["local_includes"] = lookup.get_template(self._defs["local_includes"]).render()
 		else:
 			template_vars["local_includes"] = ""
 		tex_result = template.render(**template_vars)
