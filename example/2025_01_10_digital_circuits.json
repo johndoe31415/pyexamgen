@@ -4,7 +4,9 @@
 	"format": "typst",
 	"sources": [
 		{ "name": "title" },
-		{ "name": "task1" }
+		{ "name": "task1" },
+		{ "name": "task2" },
+		{ "name": "task3" }
 	],
 	"variables": {
 		"subject": "Informatik",

@@ -32,10 +32,11 @@ ${f'{pts:.1f}'} Punkte\
 	h.advance_question()
 %>
 	
-	Frage ${h.current_task_no}.${h.current_question_no}: ${show_points(pts)}
+	*Frage ${h.current_task_no}.${h.current_question_no}:* ${show_points(pts)}
 	#pad(left: 1cm)[
 		${caller.body()}
 	]
+	#v(0.5cm)
 </%def>
 
 <%def name="answer()">

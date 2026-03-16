@@ -9,7 +9,7 @@
 					columns: (75%, 20%),
 					column-gutter: 0.6cm,
 					align: (left, right),
-					[*${name} ${date}*],
+					[#smallcaps[${name} ${date}]],
 					[#counter(page).display() von #counter(page).final().first()],
 				)
 				#v(-0.25cm)
@@ -58,6 +58,7 @@
 )
 
 #v(1.2cm)
+#set par(justify: true)
 
 Es sind grundsätzlich *alle Rechenwege* anzugeben und die Klausur ist dokumentenecht ohne Verwendung der Farben rot/grün auszufüllen. Diese Klausur besteht aus *#context[#counter(page).final().first()] Seiten*. Stellen Sie vor Beginn der Bearbeitung sicher, dass Sie alle Seiten vollständig erhalten haben. Wenn die Tackerung der Seiten entfernt wird, muss auf jedem getrennten Blatt die Matrikelnummer vermerkt werden, andernfalls wird das getrennte Blatt nicht gewertet. Ein programmierbarer Taschenrechner oder ein Taschenrechner mit CAS stellt ein *unzulässiges Hilfsmittel* dar und die Verwendung wird als Unterschleif gewertet. Viel Erfolg.
 
