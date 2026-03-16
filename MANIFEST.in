@@ -1,4 +1,2 @@
-recursive-include pyexamgen/templates *
-
-recursive-exclude pyexamgen *.pyc
-recursive-exclude pyexamgen .*.swp
+recursive-include src/pyexamgen/templates *
+recursive-exclude src/pyexamgen/templates .*.swp

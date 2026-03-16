@@ -1,0 +1,33 @@
+[build-system]
+requires = [ "setuptools>=77.0.3" ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyexamgen"
+license = "GPL-3.0"
+version = "0.0.3rc0"
+description = "Generate LaTeX/Typst exams using advanced Mako templates"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [ { name = "Johannes Bauer", email = "joe@johannes-bauer.com" } ]
+keywords = [ "exam", "generator", "template" ]
+classifiers = [
+	"Programming Language :: Python :: 3",
+]
+dependencies = [ ]
+
+[project.urls]
+Homepage = "https://github.com/johndoe31415/pyexamgen"
+Repository = "https://github.com/johndoe31415/pyexamgen.git"
+Issues = "https://github.com/johndoe31415/pyexamgen/issues"
+Releases = "https://github.com/johndoe31415/pyexamgen/tags"
+
+[project.scripts]
+pyexamgen = "pyexamgen.__main__:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [ "src" ]
