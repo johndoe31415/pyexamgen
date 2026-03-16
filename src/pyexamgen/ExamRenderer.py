@@ -1,4 +1,4 @@
-#	pyexamgen - Generate LaTeX exams using advanced Mako templates
+#	pyexamgen - Generate LaTeX/Typst exams using advanced Mako templates
 #	Copyright (C) 2023-2025 Johannes Bauer
 #
 #	This file is part of pyexamgen.
