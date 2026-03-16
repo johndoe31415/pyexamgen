@@ -2,3 +2,4 @@
 __pycache__
 pyexamgen.egg-info/
 dist
+example/*.pdf

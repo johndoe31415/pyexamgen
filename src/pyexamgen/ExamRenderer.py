@@ -1,5 +1,5 @@
 #	pyexamgen - Generate LaTeX/Typst exams using advanced Mako templates
-#	Copyright (C) 2023-2025 Johannes Bauer
+#	Copyright (C) 2023-2026 Johannes Bauer
 #
 #	This file is part of pyexamgen.
 #
@@ -32,12 +32,14 @@ from .PRNG import PRNG
 from .WorkDir import WorkDir
 
 class ExamRenderer():
-	def __init__(self, definition_filename: str, output_tex: bool = False, seed_overrides: dict | None = None, verbose: int = 0):
+	def __init__(self, definition_filename: str, output_source_doc: bool = False, seed_overrides: dict | None = None, draft_mode: bool = False, randomize_all_task_seeds: bool = False, verbose: int = 0):
 		self._definition_filename = definition_filename
-		self._output_tex = output_tex
+		self._output_source_doc = output_source_doc
 		self._seed_overrides = seed_overrides
 		if self._seed_overrides is None:
 			self._seed_overrides = { }
+		self._draft_mode = draft_mode
+		self._randomize_all_task_seeds = randomize_all_task_seeds
 		self._verbose = verbose
 		with open(definition_filename) as f:
 			self._defs = json.load(f)
@@ -51,16 +53,27 @@ class ExamRenderer():
 		return f"{os.path.dirname(__file__)}/templates/{self._defs['locale']}"
 
 	@property
+	def output_format(self):
+		return self._defs.get("format", "tex")
+
+	@property
+	def output_source_extension(self):
+		return {
+			"tex":		"tex",
+			"typst":	"typ",
+		}[self.output_format]
+
+	@property
 	def basename(self):
 		return os.path.splitext(os.path.basename(self._definition_filename))[0]
 
 	@property
 	def output_filename_exam(self):
-		return f"{self.basename}.tex" if self._output_tex else f"{self.basename}.pdf"
+		return f"{self.basename}.{self.output_source_extension}" if self._output_source_doc else f"{self.basename}.pdf"
 
 	@property
 	def output_filename_solution(self):
-		return f"{self.basename}_solution.tex" if self._output_tex else f"{self.basename}_solution.pdf"
+		return f"{self.basename}_solution.{self.output_source_extension}" if self._output_source_doc else f"{self.basename}_solution.pdf"
 
 	@property
 	def definition_directory(self):
@@ -113,7 +126,7 @@ class ExamRenderer():
 		if self._verbose >= 3:
 			print(f"Rendering fragment {fragment_definition['name']} with PRNG seed \"{prng_seed}\", fragment dir {fragment_directory}")
 		lookup = mako.lookup.TemplateLookup([ ".", self.template_dir ], strict_undefined = True)
-		template = lookup.get_template("task.tex")
+		template = lookup.get_template(f"task.{self.output_source_extension}")
 		template_vars = dict(template_vars)
 		if "args" in fragment_definition:
 			template_vars.update(fragment_definition["args"])
@@ -143,21 +156,29 @@ class ExamRenderer():
 				chunks.append(self._render_fragment(fragment, template_vars))
 		return chunks
 
-	def _tex_to_pdf(self, tex_input: str, output_filename_pdf: str):
+	def _render_source_to_pdf(self, source_text: str, output_filename_pdf: str):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			with open(tmpdir + "/document.tex", "w") as f:
-				f.write(tex_input)
+			with open(f"{tmpdir}/document.{self.output_source_extension}", "w") as f:
+				f.write(source_text)
 			with WorkDir(tmpdir):
 				for (src_filename, (dst_filename, content)) in self._rendered.items():
 					with open(dst_filename, "wb") as f:
 						f.write(content)
-				for texrun in range(2):
+
+				run_count = 1 if self._draft_mode else 2
+				for run_count in range(run_count):
 					try:
 						if self._verbose >= 1:
-							print(f"Rendering TeX: {tmpdir}/document.tex")
-						subprocess.check_call([ "pdflatex", "-halt-on-error", "-shell-escape", "document.tex" ], stdout = subprocess.DEVNULL if self._verbose < 2 else None, stderr = subprocess.DEVNULL if self._verbose < 2 else None)
+							print(f"Rendering document: {tmpdir}/document.{self.output_source_extension}")
+						if self.output_source_extension == "tex":
+							cmd = [ "pdflatex", "-halt-on-error", "-shell-escape", f"document.{self.output_source_extension}" ]
+						elif self.output_source_extension == "typ":
+							cmd = [ "typst", "compile", f"document.{self.output_source_extension}" ]
+						else:
+							raise NotImplementedError(self.output_source_extension)
+						subprocess.check_call(cmd, stdout = subprocess.DEVNULL if self._verbose < 2 else None, stderr = subprocess.DEVNULL if self._verbose < 2 else None)
 					except subprocess.CalledProcessError:
-						print(f"Fatal error: TeX rendering failed. TeX source: {tmpdir}/document.tex", file = sys.stderr)
+						print(f"Fatal error: Document rendering failed. Document source: {tmpdir}/document.{self.output_source_extension}", file = sys.stderr)
 						if self._verbose >= 2:
 							input("Press RETURN to continue...")
 			shutil.move(f"{tmpdir}/document.pdf", output_filename_pdf)
@@ -178,7 +199,7 @@ class ExamRenderer():
 
 		# Now render final TeX document
 		lookup = mako.lookup.TemplateLookup([ self.definition_directory, self.template_dir ], strict_undefined = True)
-		template = lookup.get_template("base.tex")
+		template = lookup.get_template(f"base.{self.output_source_extension}")
 		template_vars = {
 			"chunks": chunks,
 		}
@@ -186,13 +207,13 @@ class ExamRenderer():
 			template_vars["local_includes"] = lookup.get_template(self._defs["local_includes"]).render()
 		else:
 			template_vars["local_includes"] = ""
-		tex_result = template.render(**template_vars)
+		source_result = template.render(**template_vars)
 
-		if self._output_tex:
+		if self._output_source_doc:
 			with open(output_filename, "w") as f:
-				f.write(tex_result)
+				f.write(source_result)
 		else:
-			self._tex_to_pdf(tex_result, output_filename)
+			self._render_source_to_pdf(source_result, output_filename)
 
 	def render_exam(self):
 		self._render({

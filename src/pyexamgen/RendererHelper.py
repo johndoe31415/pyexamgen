@@ -1,5 +1,5 @@
 #	pyexamgen - Generate LaTeX/Typst exams using advanced Mako templates
-#	Copyright (C) 2023-2025 Johannes Bauer
+#	Copyright (C) 2023-2026 Johannes Bauer
 #
 #	This file is part of pyexamgen.
 #
@@ -26,6 +26,7 @@ class RendererHelper():
 	def __init__(self, exam_renderer: "ExamRenderer"):
 		self._exam_renderer = exam_renderer
 		self._task_count = 0
+		self._question_no = 0
 		self._points_count = 0
 		self._points_of = collections.defaultdict(int)
 
@@ -45,12 +46,22 @@ class RendererHelper():
 	def current_task_no(self):
 		return self._task_count
 
+	@property
+	def current_question_no(self):
+		return self._question_no
+
 	def freeze(self):
 		return {
 			"points_of": dict(self.points_of),
 			"total_number_tasks": self.task_count,
 			"total_number_points": self.points_count,
 		}
+
+	def reset_question_counter(self):
+		self._question_no = 0
+
+	def advance_question(self):
+		self._question_no += 1
 
 	def next_task_no(self):
 		self._task_count += 1

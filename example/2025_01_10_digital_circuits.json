@@ -1,0 +1,22 @@
+{
+	"locale": "de-DE",
+	"prng": "fsjd3983",
+	"format": "typst",
+	"sources": [
+		{ "name": "title" },
+		{ "name": "task1" }
+	],
+	"variables": {
+		"subject": "Informatik",
+		"name": "Tech. Informatik I/Digitaltechnik",
+		"lecturer": "Prof. Dr. Johannes Bauer",
+		"supplies": [
+			"1 handbeschriebenes Blatt A4",
+			"Taschenrechner"
+		],
+		"date": "10.01.2025",
+		"time": "90 Minuten",
+		"year": "TINF23CS2",
+		"semester": "1"
+	}
+}
