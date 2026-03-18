@@ -32,14 +32,11 @@ from .PRNG import PRNG
 from .WorkDir import WorkDir
 
 class ExamRenderer():
-	def __init__(self, definition_filename: str, output_source_doc: bool = False, seed_overrides: dict | None = None, draft_mode: bool = False, randomize_all_task_seeds: bool = False, verbose: int = 0):
+	def __init__(self, definition_filename: str, output_source_doc: bool = False, draft_mode: bool = False, randomize_task_seeds: bool = False, verbose: int = 0):
 		self._definition_filename = definition_filename
 		self._output_source_doc = output_source_doc
-		self._seed_overrides = seed_overrides
-		if self._seed_overrides is None:
-			self._seed_overrides = { }
 		self._draft_mode = draft_mode
-		self._randomize_all_task_seeds = randomize_all_task_seeds
+		self._randomize_task_seeds = randomize_task_seeds
 		self._verbose = verbose
 		with open(definition_filename) as f:
 			self._defs = json.load(f)
@@ -84,10 +81,7 @@ class ExamRenderer():
 
 	@property
 	def root_seed(self):
-		if "root" in self._seed_overrides:
-			return self._seed_overrides["root"]
-		else:
-			return self._defs.get("prng", "")
+		return self._defs.get("prng", "")
 
 	def _render(self, render_input_filename, render_hook):
 		if render_input_filename not in self._rendered:
@@ -117,10 +111,10 @@ class ExamRenderer():
 		return self._rendered[full_gpl_filename][0]
 
 	def _render_fragment(self, fragment_definition: dict, template_vars: dict):
-		if fragment_definition["name"] in self._seed_overrides:
-			prng_seed = self.root_seed + "::" + fragment_definition["name"] + "::" + self._seed_overrides[fragment_definition["name"]]
-		else:
-			prng_seed = self.root_seed + "::" + fragment_definition["name"] + "::" + fragment_definition.get("prng", "")
+		local_fragment_seed = fragment_definition.get("prng", "")
+		if self._randomize_task_seeds and (local_fragment_seed == ""):
+			local_fragment_seed = os.urandom(2).hex()
+		prng_seed = self.root_seed + "::" + fragment_definition["name"] + "::" + local_fragment_seed
 
 		fragment_directory = self.definition_directory + fragment_definition["name"]
 		if self._verbose >= 3:
@@ -133,6 +127,8 @@ class ExamRenderer():
 		template_vars.update({
 			"prng": PRNG(prng_seed.encode("utf-8")),
 			"math": math,
+			"chunk_prng_seed": prng_seed,
+			"local_fragment_seed": local_fragment_seed,
 		})
 		rendered = template.render(**template_vars)
 		return rendered
@@ -197,7 +193,7 @@ class ExamRenderer():
 			template_vars["h"] = RendererHelper(self)
 		chunks = self._do_render(template_vars)
 
-		# Now render final TeX document
+		# Now render final document
 		lookup = mako.lookup.TemplateLookup([ self.definition_directory, self.template_dir ], strict_undefined = True)
 		template = lookup.get_template(f"base.{self.output_source_extension}")
 		template_vars = {

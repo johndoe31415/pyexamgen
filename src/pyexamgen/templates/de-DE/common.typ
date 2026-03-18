@@ -1,7 +1,7 @@
 <%def name="task(text)">
 	#pagebreak()
 
-	#text(size: 14pt, weight: "bold")[Aufgabe ${h.next_task_no()}: ${text}]
+	#text(size: 14pt, weight: "bold")[Aufgabe ${h.next_task_no()}: ${text}${f" [seed={local_fragment_seed}]" if solution else ""}]
 	${caller.body()}
 	%if not solution:
 	#pagebreak()

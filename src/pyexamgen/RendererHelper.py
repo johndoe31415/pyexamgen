@@ -19,8 +19,10 @@
 #
 #	Johannes Bauer <JohannesBauer@gmx.de>
 
+import subprocess
 import json
 import collections
+from .CmdlineEscape import CmdlineEscape
 
 class RendererHelper():
 	def __init__(self, exam_renderer: "ExamRenderer"):
@@ -85,6 +87,11 @@ class RendererHelper():
 			return self._exam_renderer.render_gnuplot(filename)
 		else:
 			raise ValueError(f"Do not know how to render this file: {filename}")
+
+	def exec(self, cmd: list[str]):
+#		print(CmdlineEscape().cmdline(cmd))
+		proc = subprocess.run(cmd, check = True, capture_output = True)
+		return proc.stdout.decode("utf-8")
 
 	def spacestr_la(self, string: str, group_len: int):
 		"""Left-align a string in a spaced fashion."""
